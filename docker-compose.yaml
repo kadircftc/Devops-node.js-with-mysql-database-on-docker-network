@@ -1,0 +1,37 @@
+version: '3.9'
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: mysql-container
+    environment:
+      MYSQL_ROOT_PASSWORD: kadir123  # Root kullanıcısı için şifre
+      MYSQL_DATABASE: nodefb  # Başlangıç veritabanı adı
+    volumes:
+      - mysql_data:/var/lib/mysql       # Veritabanı verilerini kalıcı hale getirmek için volume
+    ports:
+      - "3307:3306"                     # MySQL portu dışa açılıyor
+    networks:
+      - my_network
+
+  nodeapi:
+    image: nodeapi:1.2
+    container_name: nodeapi-container
+    ports:
+      - "5000:4000"   # Node.js uygulamanızın dış portunu bağlar
+    environment:
+      - DB_HOST=mysql-container         # MySQL host adı (aynı Docker ağında olduğundan, container adı kullanılır) 3307 portunu buradan algılar
+      - DB_USER=root                    # MySQL kullanıcı adı
+      - DB_PASSWORD=kadir123        # MySQL şifresi
+      - DB_NAME=nodefb      # MySQL veritabanı adı
+    networks:
+      - my_network
+    depends_on:
+      - mysql                          # Node.js uygulamanız MySQL servisine bağlıdır
+
+networks:
+  my_network:                         # MySQL ve Node.js uygulamasının aynı ağda olması
+    driver: bridge
+
+volumes:
+  mysql_data:                         # Veritabanı verilerinin kalıcı olması için volume
